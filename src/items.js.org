@@ -1,0 +1,96 @@
+import { useState } from 'react';
+
+const SERVER_URL = "https://abra-course-server.herokuapp.com";
+
+const Items =  ({props}) =>{
+	const[accessToken,setAccessToken] = useState(undefined)
+
+	const register = async (username, password, email, firstName, lastName) =>{
+
+		const payload = {
+			username:username,
+			password:password,
+			password2:password,
+			email:email,
+			first_name:firstName,
+			last_name:lastName
+
+		}
+
+		try {
+			const response = await fetch(SERVER_URL+ "/register/",{
+				headers:{'content-type':'application/json'},
+				method:'POST',
+				body:JSON.stringify(payload)
+
+			})
+
+			const data = await response.json();
+			console.log(data);
+
+		} catch(e) {
+			console.log("ERROR" + e);
+
+		}
+	}
+
+	const fetchToken = async (username, password) => {
+
+		const payload = {username, password}
+
+		try {
+			const response = await fetch(SERVER_URL + "/api/token/", {
+				headers:{'content-type':'application/json'},
+				method:'POST',
+				body:JSON.stringify(payload)
+			})
+			console.log(JSON.stringify(payload))
+
+			const data = await response.json();
+			console.log(data);
+
+			return(data.access);
+
+		} catch(e) {
+			console.log(e);
+		
+		}
+	}
+
+	const getItems = async() => {
+		const response = await fetch(SERVER_URL + '/items/',{
+			headers:{
+				'content-type':'application/json',
+				'Authorization': 'Bearer ' + accessToken
+			},
+			method:'GET'
+		})
+
+		const data = await response.json();
+		console.log(data);
+	}
+
+	const loginUser = async () =>{
+		const accessToken = await fetchToken("Hagai_Leshem","!q1W2e3r4");
+		setAccessToken(accessToken);
+		console.log(accessToken);
+	}
+
+	return(
+		<>
+			<p>test </p>
+			<button onClick = {() => register("Hagai_Leshem","!q1W2e3r4","guy22@gmail.com","Hagai","Leshem")}>click to register</button>
+			<button onClick = {() => loginUser(fetchToken)}>click to login</button>
+			<button onClick = {() => fetchToken("Hagai_Leshem","!q1W2e3r4")}>TEST</button>
+
+			<button onClick = {() => loginUser(getItems)}>get items for user</button>
+			 { accessToken && <p>Your acccess token : {accessToken}</p>}
+
+		</>
+
+		)
+}
+
+export default Items;
+
+//https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSMissingAllowOrigin
